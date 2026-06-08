@@ -25,18 +25,22 @@ class CardService {
     final response = await _dio.get('/card');
 
     if (response.statusCode == 200) {
-      final data = response.data;
-
-      if (data is List) {
-        return data.map(_cardFromJson).toList();
-      }
-
-      if (data is Map<String, dynamic> && data['cards'] is List) {
-        return (data['cards'] as List).map(_cardFromJson).toList();
-      }
+      return _cardsFromResponse(response.data);
     }
 
     throw Exception(response.data['message'] ?? 'Erro ao buscar cards');
+  }
+
+  Future<List<CardModel>> findReviewCards() async {
+    final response = await _dio.get('/card/review');
+
+    if (response.statusCode == 200) {
+      return _cardsFromResponse(response.data);
+    }
+
+    throw Exception(
+      response.data['message'] ?? 'Erro ao buscar cards para revisao',
+    );
   }
 
   Future<CardModel> findById(String id) async {
@@ -49,8 +53,18 @@ class CardService {
     throw Exception(response.data['message'] ?? 'Erro ao buscar card');
   }
 
+  Future<CardModel> reviewCard(String id) async {
+    final response = await _dio.post('/card/$id/review', data: {});
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return _cardFromResponse(response.data);
+    }
+
+    throw Exception(response.data['message'] ?? 'Erro ao revisar card');
+  }
+
   Future<void> deleteCard(String id) async {
-    final response = await _dio.delete('/card/$id');
+    final response = await _dio.delete('/card/$id', data: {});
 
     if (response.statusCode == 200 || response.statusCode == 204) {
       return;
@@ -71,6 +85,18 @@ class CardService {
     }
 
     throw Exception('Resposta de card invalida');
+  }
+
+  List<CardModel> _cardsFromResponse(dynamic data) {
+    if (data is List) {
+      return data.map(_cardFromJson).toList();
+    }
+
+    if (data is Map<String, dynamic> && data['cards'] is List) {
+      return (data['cards'] as List).map(_cardFromJson).toList();
+    }
+
+    throw Exception('Resposta de cards invalida');
   }
 
   CardModel _cardFromJson(dynamic json) {

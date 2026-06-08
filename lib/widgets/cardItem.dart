@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:releae/features/card/cardModel.dart';
 import 'package:releae/features/card/cardService.dart';
+import 'package:releae/features/favorite/favoriteRepository.dart';
 
 class CardItem extends StatefulWidget {
   final CardModel card;
   final VoidCallback onDeleted;
+  final VoidCallback? onFavoriteChanged;
+  final bool showDeleteButton;
 
-  const CardItem({super.key, required this.card, required this.onDeleted});
+  const CardItem({
+    super.key,
+    required this.card,
+    required this.onDeleted,
+    this.onFavoriteChanged,
+    this.showDeleteButton = true,
+  });
 
   @override
   State<CardItem> createState() => _CardItemState();
@@ -14,9 +23,56 @@ class CardItem extends StatefulWidget {
 
 class _CardItemState extends State<CardItem> {
   final CardService cardService = CardService();
+  final FavoriteRepository favoriteRepository = FavoriteRepository();
 
   bool isFavorite = false;
   bool isDeleting = false;
+  bool isLoadingFavorite = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadFavorite();
+  }
+
+  Future<void> loadFavorite() async {
+    final favorite = await favoriteRepository.isFavorite(widget.card.id);
+
+    if (!mounted) return;
+
+    setState(() {
+      isFavorite = favorite;
+      isLoadingFavorite = false;
+    });
+  }
+
+  Future<void> toggleFavorite() async {
+    setState(() {
+      isLoadingFavorite = true;
+    });
+
+    try {
+      if (isFavorite) {
+        await favoriteRepository.remove(widget.card.id);
+      } else {
+        await favoriteRepository.add(widget.card);
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        isFavorite = !isFavorite;
+      });
+
+      widget.onFavoriteChanged?.call();
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoadingFavorite = false;
+        });
+      }
+    }
+  }
 
   Future<void> deleteCard() async {
     setState(() {
@@ -24,6 +80,7 @@ class _CardItemState extends State<CardItem> {
     });
 
     try {
+      debugPrint(" ID: ${widget.card.id}");
       await cardService.deleteCard(widget.card.id);
 
       if (!mounted) return;
@@ -38,6 +95,8 @@ class _CardItemState extends State<CardItem> {
       widget.onDeleted();
     } catch (error) {
       if (!mounted) return;
+
+      debugPrint("Caiu no catch! O erro bruto é: $error");
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -83,11 +142,7 @@ class _CardItemState extends State<CardItem> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () {
-                    setState(() {
-                      isFavorite = !isFavorite;
-                    });
-                  },
+                  onPressed: isLoadingFavorite ? null : toggleFavorite,
                   icon: Icon(
                     isFavorite ? Icons.favorite : Icons.favorite_border,
                   ),
@@ -103,26 +158,27 @@ class _CardItemState extends State<CardItem> {
                       ? 'Remover dos favoritos'
                       : 'Adicionar aos favoritos',
                 ),
-                IconButton(
-                  onPressed: isDeleting ? null : deleteCard,
-                  icon: isDeleting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFF888888),
-                          ),
-                        )
-                      : const Icon(Icons.delete_outline),
-                  color: const Color(0xFF888888),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minHeight: 36,
-                    minWidth: 36,
+                if (widget.showDeleteButton)
+                  IconButton(
+                    onPressed: isDeleting ? null : deleteCard,
+                    icon: isDeleting
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFF888888),
+                            ),
+                          )
+                        : const Icon(Icons.delete_outline),
+                    color: const Color(0xFF888888),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minHeight: 36,
+                      minWidth: 36,
+                    ),
+                    tooltip: 'Excluir card',
                   ),
-                  tooltip: 'Excluir card',
-                ),
               ],
             ),
             const SizedBox(height: 10),
