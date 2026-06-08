@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:releae/pages/registerPage.dart';
 import 'package:releae/widgets/loginForm.dart';
 
 class LoginPage extends StatelessWidget {
@@ -12,7 +13,23 @@ class LoginPage extends StatelessWidget {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
-            child: const LoginForm()
+            child: Column(
+              children: [
+                const LoginForm(),
+                const SizedBox(height: 18),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const RegisterPage(),
+                      ),
+                    );
+                  },
+                  child: const Text('Ainda nao tem conta? Cadastre-se'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

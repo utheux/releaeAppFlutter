@@ -42,7 +42,7 @@ class _LoginFormState extends State<LoginForm> {
     return Column(
       children: [
         Text(
-          'Releae',
+          'Relêaê',
           style: GoogleFonts.poppins(
             fontSize: 36,
             fontWeight: FontWeight.w600,
