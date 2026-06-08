@@ -16,7 +16,7 @@ class InitialPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Releaê",
+              "Relêaê",
               style: GoogleFonts.poppins(
                 color: Color(0xFF2F2F2F),
                 fontWeight: FontWeight.w600,

@@ -13,7 +13,7 @@ class UserService {
     required String password,
   }) async {
     final response = await _dio.post(
-      '/users',
+      '/user',
       data: {
         'name': name,
         'surName': surName,
