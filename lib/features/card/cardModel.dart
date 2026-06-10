@@ -20,14 +20,9 @@ class CardModel {
   });
 
   factory CardModel.fromJson(Map<String, dynamic> json) {
-    final id = json['_id'] ?? json['id'];
-
-    if (id == null || id.toString().isEmpty) {
-      throw FormatException('Card sem id');
-    }
 
     return CardModel(
-      id: id.toString(),
+      id: json['_id'] ?? '',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       reviewStep: json['reviewStep'] ?? 0,
