@@ -45,13 +45,11 @@ class InitialPage extends StatelessWidget {
           ),
         ],
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Padding(padding: EdgeInsets.symmetric(vertical: 50), child: CardForm()),
-          NavBar()
-        ],
+      body: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 50),
+        child: CardForm(),
       ),
+      bottomNavigationBar: const NavBar(),
     );
   }
 }
